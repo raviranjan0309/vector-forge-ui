@@ -1,10 +1,18 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, JetBrains_Mono } from "next/font/google"
+import { Playfair_Display, Roboto, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({
+const roboto = Roboto({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "700"],
+  variable: "--font-roboto",
+  display: "swap",
+})
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-playfair",
   display: "swap",
 })
 
@@ -33,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable} bg-background`}>
+    <html lang="en" className={`${roboto.variable} ${playfair.variable} ${mono.variable} bg-background`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   )
