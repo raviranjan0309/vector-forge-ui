@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { AgentCard, MetricBlock } from "./agent-card"
 import { Button } from "@/components/ui/button"
 import { Expandable } from "@/components/ui/expandable"
-import type { LeaderboardRow } from "@/lib/types"
+import type { LeaderboardRow, TrainingRun } from "@/lib/types"
 
 const LEADERBOARD: LeaderboardRow[] = [
   { rank: 1, model: "WeightedEnsemble_L2", metric: 0.921, inferTime: "12ms", best: true },
@@ -13,7 +13,20 @@ const LEADERBOARD: LeaderboardRow[] = [
   { rank: 5, model: "RandomForest_BAG_L1", metric: 0.882, inferTime: "9ms" },
 ]
 
-export function TrainingCard() {
+const DEFAULT_TRAINING: TrainingRun = {
+  id: "train_demo",
+  status: "complete",
+  metrics: { bestRocAuc: "0.921", modelsTrained: "11", trainTime: "6m 24s", computeCost: "$0.64" },
+  leaderboard: LEADERBOARD,
+  featureImportance: [
+    { f: "nps_score", w: 0.34 },
+    { f: "support_tickets", w: 0.27 },
+    { f: "arr_usd", w: 0.19 },
+    { f: "employee_count", w: 0.12 },
+  ],
+}
+
+export function TrainingCard({ training = DEFAULT_TRAINING }: { training?: TrainingRun }) {
   return (
     <AgentCard
       title="AutoGluon Training Complete"
@@ -22,10 +35,10 @@ export function TrainingCard() {
       source="Training Agent · TabularPredictor on AWS SageMaker"
     >
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <MetricBlock label="Best ROC-AUC" value="0.921" tone="success" />
-        <MetricBlock label="Models trained" value="11" />
-        <MetricBlock label="Train time" value="6m 24s" />
-        <MetricBlock label="Compute cost" value="$0.64" />
+        <MetricBlock label="Best ROC-AUC" value={training.metrics.bestRocAuc} tone="success" />
+        <MetricBlock label="Models trained" value={training.metrics.modelsTrained} />
+        <MetricBlock label="Train time" value={training.metrics.trainTime} />
+        <MetricBlock label="Compute cost" value={training.metrics.computeCost} />
       </div>
 
       <div className="mt-4 overflow-hidden rounded-lg border border-border">
@@ -39,7 +52,7 @@ export function TrainingCard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {LEADERBOARD.map((row) => (
+            {training.leaderboard.map((row) => (
               <tr key={row.model} className={cn("hover:bg-surface-muted/50", row.best && "bg-success-soft/40")}>
                 <td className="px-3 py-2.5">
                   {row.best ? (
@@ -59,12 +72,7 @@ export function TrainingCard() {
 
       <Expandable label="Feature importance & diagnostics" className="mt-4">
         <ul className="space-y-2">
-          {[
-            { f: "nps_score", w: 0.34 },
-            { f: "support_tickets", w: 0.27 },
-            { f: "arr_usd", w: 0.19 },
-            { f: "employee_count", w: 0.12 },
-          ].map((item) => (
+          {training.featureImportance.map((item) => (
             <li key={item.f} className="flex items-center gap-3">
               <span className="w-32 shrink-0 font-mono text-xs text-foreground">{item.f}</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-muted">

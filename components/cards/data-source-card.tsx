@@ -4,6 +4,7 @@ import * as React from "react"
 import { Upload, Globe, Combine, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import type { DataSourcePath } from "@/lib/types"
 
 type PathId = "upload" | "exa" | "hybrid"
 
@@ -49,7 +50,13 @@ const PATHS: {
   },
 ]
 
-export function DataSourceCard() {
+const ICONS: Record<PathId, React.ElementType> = {
+  upload: Upload,
+  exa: Globe,
+  hybrid: Combine,
+}
+
+export function DataSourceCard({ paths = PATHS }: { paths?: DataSourcePath[] }) {
   const [selected, setSelected] = React.useState<PathId>("exa")
   return (
     <div className="w-full overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
@@ -61,8 +68,8 @@ export function DataSourceCard() {
       </header>
       <div className="px-4 py-4 sm:px-5">
         <div role="radiogroup" aria-label="Data source path" className="grid gap-3 md:grid-cols-3">
-          {PATHS.map((p) => {
-            const Icon = p.icon
+          {paths.map((p) => {
+            const Icon = ICONS[p.id]
             const active = selected === p.id
             return (
               <button
@@ -103,7 +110,7 @@ export function DataSourceCard() {
           })}
         </div>
         <div className="mt-4 flex items-center gap-2">
-          <Button>Continue with {PATHS.find((p) => p.id === selected)?.title}</Button>
+          <Button>Continue with {paths.find((p) => p.id === selected)?.title}</Button>
         </div>
       </div>
     </div>

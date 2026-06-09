@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { StatusPill } from "@/components/ui/status-pill"
 import { Expandable } from "@/components/ui/expandable"
-import type { EffortOption, EffortLevel } from "@/lib/types"
+import type { EffortOption, EffortLevel, ExaRun } from "@/lib/types"
 
 const EFFORTS: EffortOption[] = [
   { value: "low", label: "Quick Draft", cost: "~$0.025", description: "Prototype, small datasets" },
@@ -35,12 +35,33 @@ const PREVIEW_ROWS = [
   { company: "Atlas Stack", arr: "6.0M", emp: 250, nps: 47, tickets: 180, churned: false },
 ]
 
-export function ExaBuilderCard() {
-  const [effort, setEffort] = React.useState<EffortLevel>("medium")
-  const [phase, setPhase] = React.useState<"config" | "running" | "complete">("complete")
-  const [activeStage, setActiveStage] = React.useState(4)
+const DEFAULT_EXA_RUN: ExaRun = {
+  id: "exa_run_demo",
+  datasetId: "saas_churn_v2",
+  query:
+    "Build a labelled churn dataset for B2B SaaS companies, 50-500 employees, with ARR, NPS, support ticket volume, and churn label.",
+  efforts: EFFORTS,
+  selectedEffort: "medium",
+  status: "complete",
+  stages: STAGES,
+  activeStage: 4,
+  stats: { rows: "180", features: "12", qualityScore: "92", runCost: "$0.10" },
+  previewRows: PREVIEW_ROWS,
+  provenance: [
+    { field: "arr_usd", src: "crunchbase.com/northwind-saas" },
+    { field: "nps_score", src: "g2.com/products/northwind/reviews" },
+    { field: "support_tickets", src: "trustpilot.com/review/northwind" },
+  ],
+}
 
-  const selectedEffort = EFFORTS.find((e) => e.value === effort)!
+export function ExaBuilderCard({ run = DEFAULT_EXA_RUN }: { run?: ExaRun }) {
+  const [effort, setEffort] = React.useState<EffortLevel>(run.selectedEffort)
+  const [phase, setPhase] = React.useState<"config" | "running" | "complete">(
+    run.status === "waiting-approval" ? "config" : run.status,
+  )
+  const [activeStage, setActiveStage] = React.useState(run.activeStage)
+
+  const selectedEffort = run.efforts.find((e) => e.value === effort) || run.efforts[0]
 
   const status = phase === "config" ? "waiting-approval" : phase === "running" ? "running" : "complete"
 
@@ -65,8 +86,7 @@ export function ExaBuilderCard() {
           Dataset request
         </label>
         <div className="mt-1.5 rounded-lg border border-border bg-surface-muted/60 px-3 py-2.5 text-sm text-foreground">
-          Build a labelled churn dataset for B2B SaaS companies, 50–500 employees, with ARR, NPS, support
-          ticket volume, and churn label.
+          {run.query}
         </div>
 
         {/* Effort selector */}
@@ -78,7 +98,7 @@ export function ExaBuilderCard() {
             </span>
           </div>
           <div role="radiogroup" aria-label="Effort level" className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {EFFORTS.map((e) => {
+            {run.efforts.map((e) => {
               const active = effort === e.value
               return (
                 <button
@@ -131,7 +151,7 @@ export function ExaBuilderCard() {
         {/* Progress timeline */}
         {phase !== "config" && (
           <ol className="mt-4 flex flex-col gap-0 rounded-lg border border-border bg-surface-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between">
-            {STAGES.map((stage, i) => {
+            {run.stages.map((stage, i) => {
               const done = i < activeStage
               const current = i === activeStage && phase === "running"
               const allDone = phase === "complete"
@@ -173,16 +193,16 @@ export function ExaBuilderCard() {
         {phase === "complete" && (
           <>
             <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              <Stat icon={Database} label="Rows" value="180" />
-              <Stat icon={FileSearch} label="Features" value="12" />
-              <Stat label="Quality score" value="92" tone="success" />
-              <Stat label="Run cost" value="$0.10" />
+              <Stat icon={Database} label="Rows" value={run.stats.rows} />
+              <Stat icon={FileSearch} label="Features" value={run.stats.features} />
+              <Stat label="Quality score" value={run.stats.qualityScore} tone="success" />
+              <Stat label="Run cost" value={run.stats.runCost} />
             </div>
 
             <div className="mt-4">
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">
-                  Dataset preview (showing 5 of 180 rows)
+                  Dataset preview (showing {run.previewRows.length} of {run.stats.rows} rows)
                 </span>
                 <button className="text-xs font-medium text-primary hover:underline">View full dataset</button>
               </div>
@@ -199,7 +219,7 @@ export function ExaBuilderCard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border font-mono">
-                    {PREVIEW_ROWS.map((r) => (
+                    {run.previewRows.map((r) => (
                       <tr key={r.company} className="hover:bg-surface-muted/50">
                         <td className="px-3 py-2 font-sans font-medium text-foreground">{r.company}</td>
                         <td className="px-3 py-2 text-muted-foreground">{r.arr}</td>
@@ -225,11 +245,7 @@ export function ExaBuilderCard() {
 
             <Expandable label="Provenance — field-level web sources (output.grounding)" className="mt-4">
               <ul className="space-y-2 text-[13px]">
-                {[
-                  { field: "arr_usd", src: "crunchbase.com/northwind-saas" },
-                  { field: "nps_score", src: "g2.com/products/northwind/reviews" },
-                  { field: "support_tickets", src: "trustpilot.com/review/northwind" },
-                ].map((p) => (
+                {run.provenance.map((p) => (
                   <li key={p.field} className="flex items-center justify-between gap-3 rounded-md bg-surface-muted/60 px-3 py-2">
                     <span className="font-mono text-xs text-foreground">{p.field}</span>
                     <a

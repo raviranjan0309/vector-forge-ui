@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { UserMessage, AgentMessage, SystemCardSlot } from "./messages"
 import { Composer } from "./composer"
 import { StrategyCard } from "@/components/cards/strategy-card"
@@ -10,8 +11,28 @@ import { TrainingCard } from "@/components/cards/training-card"
 import { RagCard } from "@/components/cards/rag-card"
 import { DeploymentCard } from "@/components/cards/deployment-card"
 import { BillingApprovalCard } from "@/components/cards/billing-approval-card"
+import { fetchDemoWorkspace } from "@/lib/api"
+import type { DemoWorkspace } from "@/lib/types"
 
 export function ChatThread() {
+  const [workspace, setWorkspace] = useState<DemoWorkspace | null>(null)
+  const [apiState, setApiState] = useState<"loading" | "connected" | "fallback">("loading")
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetchDemoWorkspace(controller.signal)
+      .then((data) => {
+        setWorkspace(data)
+        setApiState("connected")
+      })
+      .catch(() => {
+        setApiState("fallback")
+      })
+
+    return () => controller.abort()
+  }, [])
+
   return (
     <div className="relative flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -23,6 +44,14 @@ export function ChatThread() {
               Today &middot; Churn Propensity Model
             </span>
             <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="mx-auto rounded-full border border-border bg-surface-muted/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+            {apiState === "connected"
+              ? "Mock backend connected"
+              : apiState === "fallback"
+                ? "Using local UI fallback data"
+                : "Connecting to mock backend..."}
           </div>
 
           <UserMessage time="9:41 AM">
@@ -37,7 +66,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <StrategyCard />
+            <StrategyCard strategy={workspace?.strategy} />
           </SystemCardSlot>
 
           <UserMessage time="9:43 AM">Looks right. The plan works for me &mdash; let&apos;s proceed.</UserMessage>
@@ -48,7 +77,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <DataSourceCard />
+            <DataSourceCard paths={workspace?.dataSources} />
           </SystemCardSlot>
 
           <UserMessage time="9:45 AM">
@@ -62,7 +91,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <ExaBuilderCard />
+            <ExaBuilderCard run={workspace?.exaRun} />
           </SystemCardSlot>
 
           <AgentMessage agent="Data Agent" time="10:02 AM">
@@ -71,7 +100,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <SchemaConfirmCard />
+            <SchemaConfirmCard dataset={workspace?.dataset} />
           </SystemCardSlot>
 
           <AgentMessage agent="Training Agent" time="10:04 AM">
@@ -80,7 +109,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <TrainingCard />
+            <TrainingCard training={workspace?.training} />
           </SystemCardSlot>
 
           <AgentMessage agent="RAG Agent" time="10:19 AM">
@@ -89,7 +118,7 @@ export function ChatThread() {
           </AgentMessage>
 
           <SystemCardSlot>
-            <RagCard />
+            <RagCard rag={workspace?.rag} />
           </SystemCardSlot>
 
           <AgentMessage agent="Deployment Agent" time="10:24 AM">

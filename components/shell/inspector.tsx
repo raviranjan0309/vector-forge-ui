@@ -3,7 +3,8 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { STATUS_META } from "@/lib/status"
-import type { ActivityEntry, AgentName } from "@/lib/types"
+import { fetchDemoWorkspace } from "@/lib/api"
+import type { ActivityEntry, SchemaColumn } from "@/lib/types"
 import { Database, Cpu, FileCheck2, DollarSign } from "lucide-react"
 
 type Tab = "context" | "schema" | "activity"
@@ -73,17 +74,36 @@ const ACTIVITY: ActivityEntry[] = [
   },
 ]
 
-const SCHEMA = [
-  { name: "company", type: "string", source: "exa" },
-  { name: "arr_usd", type: "number", source: "exa" },
-  { name: "employee_count", type: "integer", source: "exa" },
-  { name: "nps_score", type: "number", source: "enriched" },
-  { name: "support_tickets", type: "integer", source: "enriched" },
-  { name: "churned", type: "boolean", source: "exa" },
+const SCHEMA: SchemaColumn[] = [
+  { name: "company", type: "string", nullPct: 0, sample: "Northwind SaaS", source: "exa" },
+  { name: "arr_usd", type: "number", nullPct: 2, sample: "4,200,000", source: "exa" },
+  { name: "employee_count", type: "integer", nullPct: 0, sample: "180", source: "exa" },
+  { name: "nps_score", type: "number", nullPct: 8, sample: "41", source: "enriched" },
+  { name: "support_tickets", type: "integer", nullPct: 4, sample: "312", source: "enriched" },
+  { name: "churned", type: "boolean", nullPct: 0, sample: "false", source: "exa" },
 ]
 
 export function Inspector({ open }: { open: boolean }) {
   const [tab, setTab] = React.useState<Tab>("context")
+  const [activity, setActivity] = React.useState<ActivityEntry[]>(ACTIVITY)
+  const [schema, setSchema] = React.useState<SchemaColumn[]>(SCHEMA)
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+
+    fetchDemoWorkspace(controller.signal)
+      .then((data) => {
+        setActivity(data.activity)
+        setSchema(data.dataset.columns)
+      })
+      .catch(() => {
+        setActivity(ACTIVITY)
+        setSchema(SCHEMA)
+      })
+
+    return () => controller.abort()
+  }, [])
+
   if (!open) return null
 
   return (
@@ -112,8 +132,8 @@ export function Inspector({ open }: { open: boolean }) {
 
       <div className="scroll-thin flex-1 overflow-y-auto p-4">
         {tab === "context" && <ContextView />}
-        {tab === "schema" && <SchemaView />}
-        {tab === "activity" && <ActivityView />}
+        {tab === "schema" && <SchemaView schema={schema} />}
+        {tab === "activity" && <ActivityView activity={activity} />}
       </div>
     </aside>
   )
@@ -170,7 +190,7 @@ function ContextView() {
   )
 }
 
-function SchemaView() {
+function SchemaView({ schema }: { schema: SchemaColumn[] }) {
   const sourceStyle: Record<string, string> = {
     uploaded: "bg-surface-muted text-muted-foreground",
     exa: "bg-info-soft text-primary",
@@ -182,7 +202,7 @@ function SchemaView() {
         saas_churn_v2 · 6 columns
       </h4>
       <ul className="space-y-1.5">
-        {SCHEMA.map((c) => (
+        {schema.map((c) => (
           <li key={c.name} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
             <div className="min-w-0">
               <div className="truncate font-mono text-[13px] font-medium text-foreground">{c.name}</div>
@@ -198,14 +218,14 @@ function SchemaView() {
   )
 }
 
-function ActivityView() {
+function ActivityView({ activity }: { activity: ActivityEntry[] }) {
   return (
     <div>
       <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         Agent activity log
       </h4>
       <ol className="relative space-y-3 border-l border-border pl-4">
-        {ACTIVITY.map((e) => (
+        {activity.map((e) => (
           <ActivityItem key={e.id} entry={e} />
         ))}
       </ol>

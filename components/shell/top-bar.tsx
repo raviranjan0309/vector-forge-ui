@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
   ChevronRight,
   PanelRightOpen,
@@ -7,9 +8,22 @@ import {
   Search,
   Bell,
   ShieldCheck,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+type Theme = "light" | "dark"
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "light"
+
+  const stored = window.localStorage.getItem("theme")
+  if (stored === "light" || stored === "dark") return stored
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+}
 
 export function TopBar({
   inspectorOpen,
@@ -18,6 +32,28 @@ export function TopBar({
   inspectorOpen: boolean
   onToggleInspector: () => void
 }) {
+  const [theme, setTheme] = useState<Theme | null>(null)
+
+  useEffect(() => {
+    setTheme(getInitialTheme())
+  }, [])
+
+  useEffect(() => {
+    if (!theme) return
+
+    document.documentElement.dataset.theme = theme
+    window.localStorage.setItem("theme", theme)
+  }, [theme])
+
+  const isDark = theme === "dark"
+
+  function toggleTheme() {
+    const currentTheme =
+      theme || (document.documentElement.dataset.theme === "dark" ? "dark" : "light")
+
+    setTheme(currentTheme === "dark" ? "light" : "dark")
+  }
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-4">
       {/* Breadcrumb */}
@@ -48,6 +84,21 @@ export function TopBar({
         <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
           <Bell className="h-5 w-5" aria-hidden="true" />
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-warning" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+          aria-pressed={isDark}
+          title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+        >
+          {isDark ? (
+            <Sun className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Moon className="h-5 w-5" aria-hidden="true" />
+          )}
         </Button>
 
         <Button

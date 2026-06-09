@@ -1,9 +1,12 @@
+@import url("https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap");
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-mono);
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Clash Display", "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
 
+  --color-canvas: var(--canvas);
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
@@ -35,26 +38,63 @@
 :root {
   --radius: 0.625rem;
 
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --surface-muted: #f1f5f9;
+  color-scheme: light;
 
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
+  --canvas: #eef2f7;
+  --background: #f5f7fb;
+  --surface: #ffffff;
+  --surface-muted: #f3f5f9;
+
+  --primary: #e11d48;
+  --primary-dark: #be123c;
   --primary-foreground: #ffffff;
 
-  --success: #16a34a;
-  --success-soft: #dcfce7;
-  --warning: #d97706;
-  --warning-soft: #fef3c7;
-  --error: #dc2626;
-  --error-soft: #fee2e2;
-  --info: #2563eb;
-  --info-soft: #dbeafe;
+  --success: #13795b;
+  --success-soft: #e5f4ef;
+  --warning: #9a5b13;
+  --warning-soft: #fbf0d7;
+  --error: #b42318;
+  --error-soft: #f9e5e2;
+  --info: #be123c;
+  --info-soft: #fff1f4;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border: #e2e8f0;
+  --text-primary: #18212f;
+  --text-secondary: #5a6678;
+  --border: #d8dee8;
+  --body-background:
+    radial-gradient(circle at 20% -10%, rgba(225, 29, 72, 0.12), transparent 28rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 22rem),
+    var(--canvas);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #050508;
+  --background: #08090d;
+  --surface: #101116;
+  --surface-muted: #181a22;
+
+  --primary: #e11d48;
+  --primary-dark: #be123c;
+  --primary-foreground: #ffffff;
+
+  --success: #34d399;
+  --success-soft: #08251c;
+  --warning: #f59e0b;
+  --warning-soft: #2a1e08;
+  --error: #fb7185;
+  --error-soft: #2a0d14;
+  --info: #fb7185;
+  --info-soft: #2a0d18;
+
+  --text-primary: #f5f7fb;
+  --text-secondary: #9ca3af;
+  --border: #282b35;
+  --body-background:
+    radial-gradient(circle at 20% -10%, rgba(225, 29, 72, 0.18), transparent 28rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 18rem),
+    var(--canvas);
 }
 
 @layer base {
@@ -62,10 +102,19 @@
     border-color: var(--border);
   }
   body {
-    background-color: var(--background);
+    background: var(--body-background);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
   }
   /* Visible focus ring for WCAG 2.2 AA keyboard navigation */
   :focus-visible {
