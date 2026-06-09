@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-roboto);
-  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-mono);
 
   --color-background: var(--background);
@@ -34,31 +33,28 @@
 }
 
 :root {
-  /* Editorial / monochrome — sharp corners like Watracz & Cappen */
-  --radius: 0.125rem;
+  --radius: 0.625rem;
 
-  --background: #fcfcfc;
+  --background: #f8fafc;
   --surface: #ffffff;
-  --surface-muted: #f4f4f2;
+  --surface-muted: #f1f5f9;
 
-  /* Black is the brand "primary" in this editorial system */
-  --primary: #111111;
-  --primary-dark: #000000;
-  --primary-foreground: #fcfcfc;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-foreground: #ffffff;
 
-  /* Muted, restrained semantic tones to keep the monochrome feel */
-  --success: #1f7a4d;
-  --success-soft: #e7f0ea;
-  --warning: #9a6a14;
-  --warning-soft: #f4ece0;
-  --error: #a32a23;
-  --error-soft: #f3e6e5;
-  --info: #2f3a44;
-  --info-soft: #ecedee;
+  --success: #16a34a;
+  --success-soft: #dcfce7;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
+  --error: #dc2626;
+  --error-soft: #fee2e2;
+  --info: #2563eb;
+  --info-soft: #dbeafe;
 
-  --text-primary: #111111;
-  --text-secondary: #6b6b6b;
-  --border: #e6e6e3;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border: #e2e8f0;
 }
 
 @layer base {
@@ -70,20 +66,6 @@
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-  }
-  h1, h2, h3, h4 {
-    font-family: var(--font-playfair), Georgia, serif;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-  }
-  /* Editorial micro-label: uppercase, wide tracking, muted — used across both reference sites */
-  .eyebrow {
-    font-family: var(--font-roboto), sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
   }
   /* Visible focus ring for WCAG 2.2 AA keyboard navigation */
   :focus-visible {
@@ -106,15 +88,15 @@
 /* Thin enterprise scrollbars */
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: #d0d0cc transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 .scroll-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background-color: #d0d0cc;
-  border-radius: 0;
+  background-color: #cbd5e1;
+  border-radius: 9999px;
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
@@ -130,25 +112,4 @@
 
 @keyframes shimmer {
   100% { transform: translateX(100%); }
-}
-
-/* Editorial sharp-corner system (Watracz / Cappen).
-   Flatten panel/card/button radii but preserve true circles. */
-.rounded-sm,
-.rounded,
-.rounded-md,
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl,
-.rounded-tl-sm,
-.rounded-br-sm {
-  border-radius: 2px;
-}
-.rounded-full {
-  border-radius: 9999px;
-}
-
-/* Editorial flatness: trade soft shadows for crisp hairline borders */
-.shadow-sm {
-  box-shadow: none;
 }
